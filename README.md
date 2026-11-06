@@ -12,4 +12,4 @@ No cloud account, paid infrastructure, deployment, or actual production data was
 
 OpenAI Codex was used to research documentation and assist in drafting and reviewing the solution and code examples. Official sources are linked in the solution.
 
-Time spent: drafting and discussion time was not tracked accurately.
+Time spent: approximately one hour of candidate review and discussion; AI-assisted drafting time was not tracked accurately.
