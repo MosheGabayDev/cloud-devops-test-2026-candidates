@@ -1,7 +1,15 @@
-# GCP Cloud DevOps Engineer exercise
+# GCP Cloud DevOps Engineer — solution
 
-A practical assignment: improve a small existing GCP service and explain how to operate it.
+This solution addresses the five problems in the [candidate assignment](https://github.com/vtsarfin/cloud-devops-test-2026-candidates/blob/main/assignment/ASSIGNMENT.md).
 
-- [Candidate assignment](assignment/ASSIGNMENT.md) — scenario, five problems and submission requirements.
+- [Solution and architecture](SOLUTION.md)
+- [Kubernetes deployment and disruption budget example](api-availability.yaml)
+- [Azure DevOps pipeline excerpt](azure-pipelines-example.yml)
 
-Seven calendar days, with a suggested effort of 6–8 hours. No GCP account, deployment or paid resources required. All systems, incidents and targets are fictional.
+No cloud account, paid infrastructure, deployment, or actual production data was used. The snippets contain illustrative values and clearly marked integration placeholders. See the solution for assumptions, verification and tradeoffs.
+
+## AI and external sources
+
+OpenAI Codex was used to research documentation and assist in drafting and reviewing the solution and code examples. Official sources are linked in the solution.
+
+Time spent: drafting and discussion time was not tracked accurately.

@@ -1,0 +1,63 @@
+# Illustrative Azure DevOps Server 2022 excerpt, not a turnkey pipeline.
+# Configure prod environment approval and resource permissions outside YAML.
+# Replace commands marked PSEUDOCODE with tested deployment-specific implementations.
+trigger:
+  branches:
+    include: [main]
+pr: none # Azure Repos PR validation is configured as a branch policy.
+pool:
+  name: GCP-self-hosted
+variables:
+  image: 'me-west1-docker.pkg.dev/PROJECT/REPOSITORY/api'
+stages:
+- stage: Build
+  jobs:
+  - job: BuildAndRecord
+    steps:
+    - checkout: self
+    - bash: |
+        set -euo pipefail
+        docker build -t "$(image):$(Build.BuildId)" .
+        docker push "$(image):$(Build.BuildId)"
+        # PSEUDOCODE: resolve the pushed registry digest, reject missing/invalid output.
+        DIGEST="$(resolve_registry_digest '$(image)' '$(Build.BuildId)')"
+        printf '%s@%s\n' '$(image)' "$DIGEST" > image-ref.txt
+        printf '%s\n' '$(Build.SourceVersion)' > source-commit.txt
+        # PSEUDOCODE: run unit, security and image checks; fail the job on failure.
+        run_validation
+      displayName: Build, push, record digest, validate
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: image-ref.txt
+        ArtifactName: release-image
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: source-commit.txt
+        ArtifactName: release-source
+- stage: Production
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: Release
+    environment: production # preconfigured approval, restricted permissions and exclusive lock
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: DownloadBuildArtifacts@0
+            inputs:
+              buildType: current
+              downloadType: single
+              artifactName: release-image
+              downloadPath: '$(Pipeline.Workspace)'
+          - bash: |
+              set -euo pipefail
+              IMAGE_REF="$(cat '$(Pipeline.Workspace)/release-image/image-ref.txt')"
+              # PSEUDOCODE: persist current production digest and migration revision to durable release ledger.
+              record_previous_production_state
+              # PSEUDOCODE: run backwards-compatible migration as a controlled one-off job; fail closed.
+              run_migration
+              kubectl set image deployment/survey-api api="$IMAGE_REF"
+              kubectl rollout status deployment/survey-api --timeout=10m
+              # PSEUDOCODE: test real read/write path and record success, digest, commit, migration and timestamp.
+              production_smoke_test_and_record "$IMAGE_REF"
